@@ -1,0 +1,175 @@
+<head>
+  <style type="text/css">
+    body {
+      margin: 0;
+      background-color: #f4f5f6;
+    }
+    .page_title {
+      font: sans-serif;
+      text-align: center;
+      color: white;
+      background-color: #7fd5ea;
+      margin: 0;
+      padding: 0;
+    }
+    .form_box {
+      background-color: #fff;
+      width: 40%;
+      margin-left: auto;
+      margin-right: auto;
+      margin-top: 0;
+      padding-top: 0;
+      border-radius: 16px;
+      border: gray;
+    }
+    .txt_box {
+      position: relative;
+      width: 80%;
+      margin-top: 40px;
+      margin-bottom: 40px;
+      margin-left: 20px;
+      padding: 10px;
+    }
+    .form_label {
+      font: 20px/28px sans-serif;
+      color: rgba(0, 0, 0, .6);
+    }
+    .form_label:focus-within {
+      font: 24px/32px sans-serif;
+    }
+    .url_box {
+      padding-top: 30px;
+    }
+    .txt_box input {
+      font: 15px/24px sans-serif;
+      box-sizing: border-box;
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0.3em;
+      letter-spacing: 1px;
+      transition: all .6s ease;
+      border-bottom: 1px solid #cccccc;
+      border-right: none;
+      border-left: none;
+      border-top: none;
+      border-radius: 0px;
+    }
+
+    .send_btn {
+      width: 70%;
+      margin-top: 60px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-bottom: 20px;
+      text-align: center;
+    }
+
+    .send_btn button {
+      background-color: #7fd5ea;
+      color: rgba(0, 0, 0, .6);
+      font-size: 16px;
+      border-radius: 16px;
+      border: none;
+      width: 100%;
+      min-height: 40px;
+      min-width: 100px;
+    }
+    .form_label input:focus {
+      border-bottom: 1px solid #da3c41;
+      outline: none;
+      box-shadow: 0 5px -5px rgba(218, 60, 65, .5);
+    }
+    .err_msg {
+      color: #ff3300;
+      margin-left: 30px;
+      font: 15px/24px sans-serif;
+    }
+    .qr_img {
+      visibility: hidden;
+      margin-top: 30px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+    }
+  </style>
+</head>
+<html>
+  <body>
+    <h1 class="page_title">QRコード生成</h1>
+    <div class="form_box">
+      <form id="form1" action="#">
+        <div class="input_group">
+          <div class="txt_box url_box">
+            <label class ="form_label">
+              URL
+              <input type="text" id="url" placeholder="https://www.google.com/">
+            </label>
+          </div>
+          <div class="txt_box">
+            <lablel class="form_label">
+              サイズ(px)
+              <input type="number" id="size" value="200">
+            </lablel>
+          </div>
+        </div>
+        <p class="err_msg" id="err_msg"></p>
+        <div class="send_btn">
+          <button type="submit" id="b1" onclick="getImage()">生成</button>
+        </div>
+      </form>
+    </div>
+    <div class="qr_img">
+      <img id="qr">
+    </div>
+  </body>
+</html>
+
+<script>
+  function getImage() {
+    // initialize
+    document.getElementById('err_msg').innerHTML = ""
+    const img = document.getElementById('qr')
+    img.style.visibility ="hidden"
+
+    // get input
+    const url = document.getElementById("url").value;
+    const size = document.getElementById("size").value;
+
+    if (!url) {
+      document.getElementById('err_msg').innerHTML = "URLを入力してください"
+      return
+    }
+    if (!size) {
+      document.getElementById('err_msg').innerHTML = "サイズを入力してください"
+      return
+    }
+
+    if (size <45) {
+      document.getElementById('err_msg').innerHTML = "サイズは45px以上を指定してください"
+    }
+
+    const host = 'http:localhost:8080/generate' + '?url=' + url + '&width=' + size + '&height=' + size
+
+    fetch(host, {
+      method: "GET",
+      // mode: 'no-cors',
+    })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(res.statusText);
+      }
+      return res.blob()
+    })
+    .then(blob => {
+      const blobURL = (window.URL || window.webkitURL).createObjectURL(blob)
+      const img = document.querySelector('img')
+      img.src = blobURL
+      img.style.visibility = "visible"
+    })
+    .catch(err => {
+      document.getElementById('err_msg').innerHTML = "サーバーでエラーが発生しました\n" + err
+      return
+    })
+  }
+</script>
